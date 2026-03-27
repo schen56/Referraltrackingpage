@@ -2,21 +2,15 @@ import { useForm } from "react-hook-form";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { UserPlus } from "lucide-react";
 
 export type ReferralFormData = {
   name: string;
+  phone: string;
   email: string;
-  status: "pending" | "completed" | "rejected";
-  giftcardAmount: number;
+  zip?: string;
+  note?: string;
 };
 
 type ReferralFormProps = {
@@ -28,17 +22,8 @@ export function ReferralForm({ onSubmit }: ReferralFormProps) {
     register,
     handleSubmit,
     reset,
-    setValue,
-    watch,
     formState: { errors },
-  } = useForm<ReferralFormData>({
-    defaultValues: {
-      status: "pending",
-      giftcardAmount: 0,
-    },
-  });
-
-  const status = watch("status");
+  } = useForm<ReferralFormData>();
 
   const onFormSubmit = (data: ReferralFormData) => {
     onSubmit(data);
@@ -50,16 +35,16 @@ export function ReferralForm({ onSubmit }: ReferralFormProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UserPlus className="size-5" />
-          Add New Referral
+          Add a Referral
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Referral Name</Label>
+            <Label htmlFor="name">Name *</Label>
             <Input
               id="name"
-              placeholder="Enter name"
+              placeholder="Friend's full name"
               {...register("name", { required: "Name is required" })}
             />
             {errors.name && (
@@ -68,11 +53,24 @@ export function ReferralForm({ onSubmit }: ReferralFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="phone">Phone *</Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="(555) 123-4567"
+              {...register("phone", { required: "Phone is required" })}
+            />
+            {errors.phone && (
+              <p className="text-sm text-red-500">{errors.phone.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email *</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter email"
+              placeholder="friend@email.com"
               {...register("email", {
                 required: "Email is required",
                 pattern: {
@@ -87,49 +85,26 @@ export function ReferralForm({ onSubmit }: ReferralFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={status}
-              onValueChange={(value) =>
-                setValue(
-                  "status",
-                  value as "pending" | "completed" | "rejected"
-                )
-              }
-            >
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="zip">Zip Code</Label>
+            <Input
+              id="zip"
+              placeholder="12345"
+              {...register("zip")}
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="giftcardAmount">Gift Card Amount ($)</Label>
-            <Input
-              id="giftcardAmount"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              {...register("giftcardAmount", {
-                required: "Amount is required",
-                min: { value: 0, message: "Amount must be positive" },
-                valueAsNumber: true,
-              })}
+            <Label htmlFor="note">Notes</Label>
+            <textarea
+              id="note"
+              placeholder="Any details about their project..."
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              {...register("note")}
             />
-            {errors.giftcardAmount && (
-              <p className="text-sm text-red-500">
-                {errors.giftcardAmount.message}
-              </p>
-            )}
           </div>
 
           <Button type="submit" className="w-full">
-            Add Referral
+            Submit Referral
           </Button>
         </form>
       </CardContent>

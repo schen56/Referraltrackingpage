@@ -1,43 +1,35 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Trash2, Mail, Calendar } from "lucide-react";
+import { Mail, Phone, Calendar } from "lucide-react";
 import { Referral } from "./referral-stats";
 
 type ReferralListProps = {
   referrals: Referral[];
-  onDelete: (id: string) => void;
 };
 
-export function ReferralList({ referrals, onDelete }: ReferralListProps) {
-  const getStatusVariant = (
-    status: string
-  ): "default" | "secondary" | "destructive" => {
-    switch (status) {
-      case "completed":
-        return "default";
-      case "pending":
-        return "secondary";
-      case "rejected":
-        return "destructive";
-      default:
-        return "default";
-    }
-  };
+const STATUS_CONFIG: Record<
+  Referral["status"],
+  { label: string; color: string }
+> = {
+  pending: {
+    label: "Pending",
+    color: "bg-amber-100 text-amber-800 hover:bg-amber-100",
+  },
+  quote_approved: {
+    label: "Quote Approved",
+    color: "bg-blue-100 text-blue-800 hover:bg-blue-100",
+  },
+  completed: {
+    label: "Completed",
+    color: "bg-green-100 text-green-800 hover:bg-green-100",
+  },
+  expired: {
+    label: "Expired",
+    color: "bg-gray-100 text-gray-600 hover:bg-gray-100",
+  },
+};
 
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800 hover:bg-green-100";
-      case "pending":
-        return "bg-amber-100 text-amber-800 hover:bg-amber-100";
-      case "rejected":
-        return "bg-red-100 text-red-800 hover:bg-red-100";
-      default:
-        return "";
-    }
-  };
-
+export function ReferralList({ referrals }: ReferralListProps) {
   if (referrals.length === 0) {
     return (
       <Card>
@@ -46,8 +38,11 @@ export function ReferralList({ referrals, onDelete }: ReferralListProps) {
         </CardHeader>
         <CardContent>
           <div className="text-center py-12 text-gray-500">
-            <Users className="size-12 mx-auto mb-4 opacity-50" />
-            <p>No referrals yet. Add your first referral to get started!</p>
+            <UsersIcon className="size-12 mx-auto mb-4 opacity-50" />
+            <p className="font-medium">No referrals yet</p>
+            <p className="text-sm mt-1">
+              Add referrals to track your network and earn rewards.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -61,56 +56,66 @@ export function ReferralList({ referrals, onDelete }: ReferralListProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {referrals.map((referral) => (
-            <div
-              key={referral.id}
-              className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors gap-3"
-            >
-              <div className="flex-1 space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-semibold">{referral.name}</h3>
-                  <Badge className={getStatusColor(referral.status)}>
-                    {referral.status}
-                  </Badge>
+          {referrals.map((referral) => {
+            const statusConfig = STATUS_CONFIG[referral.status];
+            return (
+              <div
+                key={referral.id}
+                className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors gap-3"
+              >
+                <div className="flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-semibold">{referral.name}</h3>
+                    <Badge className={statusConfig.color}>
+                      {statusConfig.label}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <Mail className="size-3" />
+                      <span>{referral.email}</span>
+                    </div>
+                    {referral.phone && (
+                      <div className="flex items-center gap-1">
+                        <Phone className="size-3" />
+                        <span>{referral.phone}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <Calendar className="size-3" />
+                      <span>
+                        {new Date(referral.dateAdded).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Mail className="size-3" />
-                    <span>{referral.email}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="size-3" />
-                    <span>
-                      {new Date(referral.dateAdded).toLocaleDateString()}
-                    </span>
-                  </div>
+                <div className="text-right shrink-0">
+                  {referral.rewardAmount !== null ? (
+                    <>
+                      <div className="font-bold text-lg text-green-600">
+                        ${referral.rewardAmount}
+                      </div>
+                      <div className="text-xs text-gray-500">Reward</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="font-medium text-gray-400">--</div>
+                      <div className="text-xs text-gray-400">
+                        Awaiting quote
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <div className="font-bold text-lg text-green-600">
-                    ${referral.giftcardAmount.toFixed(2)}
-                  </div>
-                  <div className="text-xs text-gray-500">Gift Card</div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDelete(referral.id)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>
   );
 }
 
-function Users({ className }: { className?: string }) {
+function UsersIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

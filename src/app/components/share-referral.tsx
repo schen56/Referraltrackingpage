@@ -1,6 +1,6 @@
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Share2, Mail, Facebook, Copy, Check } from "lucide-react";
+import { Share2, Mail, MessageCircle, Copy, Check } from "lucide-react";
 import { useState } from "react";
 
 type ShareReferralProps = {
@@ -21,20 +21,18 @@ export function ShareReferral({ referralLink }: ShareReferralProps) {
   };
 
   const handleEmailShare = () => {
-    const subject = encodeURIComponent("Join me with this exclusive referral!");
+    const subject = encodeURIComponent("You've been referred to Ergeon!");
     const body = encodeURIComponent(
-      `Hey! I wanted to share this exclusive referral link with you:\n\n${referralLink}\n\nSign up and we both get rewarded!`
+      `You've been referred to Ergeon!\n\nRedeem your referral and save on your future project with Ergeon.\n\nNext Steps:\n\n1. Click the link below\n2. Provide some details about you and your project\n3. Click "Get your FREE Quote"\n\n${referralLink}\n\nThat's it! We'll contact you within 24 hours, and your discount will automatically be applied!\n\nSincerely,\nThe Ergeon Team`
     );
     window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
   };
 
-  const handleFacebookShare = () => {
-    const url = encodeURIComponent(referralLink);
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-      "_blank",
-      "width=600,height=400"
+  const handleSMSShare = () => {
+    const body = encodeURIComponent(
+      `Hey! I used Ergeon for my outdoor project and had a great experience. Use my referral link and you'll get up to $100 off: ${referralLink}`
     );
+    window.open(`sms:?&body=${body}`, "_blank");
   };
 
   return (
@@ -74,11 +72,12 @@ export function ShareReferral({ referralLink }: ShareReferralProps) {
             Share via Email
           </Button>
           <Button
-            onClick={handleFacebookShare}
-            className="flex-1 gap-2 bg-[#1877F2] hover:bg-[#166FE5] text-white"
+            onClick={handleSMSShare}
+            className="flex-1 gap-2"
+            variant="outline"
           >
-            <Facebook className="size-4" />
-            Share on Facebook
+            <MessageCircle className="size-4" />
+            Share via Text
           </Button>
         </div>
       </CardContent>

@@ -8,8 +8,8 @@ import { toast } from "sonner";
 
 const STORAGE_KEY = "referral-tracker-data";
 
-// Generate a unique referral link (in a real app, this would be user-specific)
-const REFERRAL_LINK = "https://yourapp.com/ref/ABC123XYZ";
+// In production, this comes from the user's profile (profileData.referral_url)
+const REFERRAL_LINK = "https://www.ergeon.com/ref/ABC123XYZ";
 
 export default function App() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -37,18 +37,16 @@ export default function App() {
       id: crypto.randomUUID(),
       name: data.name,
       email: data.email,
-      status: data.status,
-      giftcardAmount: data.giftcardAmount,
+      phone: data.phone,
+      zip: data.zip,
+      note: data.note,
+      status: "pending",
+      rewardAmount: null, // Determined after referee's quote is approved
       dateAdded: new Date().toISOString(),
     };
 
     setReferrals((prev) => [newReferral, ...prev]);
     toast.success("Referral added successfully!");
-  };
-
-  const handleDeleteReferral = (id: string) => {
-    setReferrals((prev) => prev.filter((r) => r.id !== id));
-    toast.success("Referral deleted");
   };
 
   return (
@@ -57,10 +55,12 @@ export default function App() {
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-            Referral Dashboard
+            Refer and Earn!
           </h1>
           <p className="text-gray-600">
-            Track your referrals and earn rewards
+            Earn <strong>up to $100 in rewards</strong> when you refer Ergeon to
+            a friend or family member — and{" "}
+            <strong>they'll get up to $100 off</strong> their project too!
           </p>
         </div>
 
@@ -79,11 +79,20 @@ export default function App() {
 
           {/* List - Takes 2 columns on large screens */}
           <div className="lg:col-span-2">
-            <ReferralList
-              referrals={referrals}
-              onDelete={handleDeleteReferral}
-            />
+            <ReferralList referrals={referrals} />
           </div>
+        </div>
+
+        {/* Policy link */}
+        <div className="text-center text-sm text-gray-500">
+          <a
+            href="https://www.ergeon.com/help/202403315"
+            target="_blank"
+            rel="noreferrer"
+            className="underline hover:text-gray-700"
+          >
+            Referral Policy Details
+          </a>
         </div>
       </div>
 

@@ -5,8 +5,11 @@ export type Referral = {
   id: string;
   name: string;
   email: string;
-  status: "pending" | "completed" | "rejected";
-  giftcardAmount: number;
+  phone: string;
+  zip?: string;
+  note?: string;
+  status: "pending" | "quote_approved" | "completed" | "expired";
+  rewardAmount: number | null; // null until referee's quote is approved ($50, $75, or $100 based on order size)
   dateAdded: string;
 };
 
@@ -15,22 +18,22 @@ type ReferralStatsProps = {
 };
 
 export function ReferralStats({ referrals }: ReferralStatsProps) {
-  const totalAmount = referrals
-    .filter((r) => r.status === "completed")
-    .reduce((sum, r) => sum + r.giftcardAmount, 0);
+  const totalEarned = referrals
+    .filter((r) => r.status === "completed" && r.rewardAmount !== null)
+    .reduce((sum, r) => sum + (r.rewardAmount ?? 0), 0);
 
   const totalReferrals = referrals.length;
   const completedReferrals = referrals.filter(
     (r) => r.status === "completed"
   ).length;
   const pendingReferrals = referrals.filter(
-    (r) => r.status === "pending"
+    (r) => r.status === "pending" || r.status === "quote_approved"
   ).length;
 
   const stats = [
     {
       title: "Total Earned",
-      value: `$${totalAmount.toFixed(2)}`,
+      value: `$${totalEarned}`,
       icon: DollarSign,
       color: "text-green-600",
       bgColor: "bg-green-100",
@@ -59,7 +62,7 @@ export function ReferralStats({ referrals }: ReferralStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {stats.map((stat) => (
         <Card key={stat.title}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
