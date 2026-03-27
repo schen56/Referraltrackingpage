@@ -23,14 +23,14 @@ export function ShareReferral({ referralLink }: ShareReferralProps) {
   const handleEmailShare = () => {
     const subject = encodeURIComponent("You've been referred to Ergeon!");
     const body = encodeURIComponent(
-      `You've been referred to Ergeon!\n\nRedeem your referral and save on your future project with Ergeon.\n\nNext Steps:\n\n1. Click the link below\n2. Provide some details about you and your project\n3. Click "Get your FREE Quote"\n\n${referralLink}\n\nThat's it! We'll contact you within 24 hours, and your discount will automatically be applied!\n\nSincerely,\nThe Ergeon Team`
+      `You've been referred to Ergeon!\n\nErgeon designs and builds fences, decks, patios, driveways, and other outdoor projects — handling everything from permits to installation.\n\nRedeem your referral and save up to $100 on your project.\n\nNext Steps:\n\n1. Click the link below\n2. Provide some details about you and your project\n3. Click "Get your FREE Quote"\n\n${referralLink}\n\nThat's it! We'll contact you within 24 hours, and your discount will automatically be applied!\n\nSincerely,\nThe Ergeon Team`
     );
     window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
   };
 
   const handleSMSShare = () => {
     const body = encodeURIComponent(
-      `Hey! I used Ergeon for my outdoor project and had a great experience. Use my referral link and you'll get up to $100 off: ${referralLink}`
+      `Hey! I used Ergeon for my fence/deck/patio project — they handle everything from design to installation and it was a great experience. Use my referral link and you'll get up to $100 off your project: ${referralLink}`
     );
     window.open(`sms:?&body=${body}`, "_blank");
   };

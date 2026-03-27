@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Mail, Phone, Calendar } from "lucide-react";
+import { Button } from "./ui/button";
+import { Mail, Phone, Calendar, Gift, Copy, Check, Eye, EyeOff } from "lucide-react";
 import { Referral } from "./referral-stats";
 
 type ReferralListProps = {
   referrals: Referral[];
+  onClaim?: (id: string) => void;
 };
 
 const STATUS_CONFIG: Record<
@@ -15,12 +18,12 @@ const STATUS_CONFIG: Record<
     label: "Pending",
     color: "bg-amber-100 text-amber-800 hover:bg-amber-100",
   },
-  quote_approved: {
-    label: "Quote Approved",
-    color: "bg-blue-100 text-blue-800 hover:bg-blue-100",
+  ready_to_claim: {
+    label: "Reward Ready!",
+    color: "bg-orange-100 text-orange-800 hover:bg-orange-100",
   },
-  completed: {
-    label: "Completed",
+  claimed: {
+    label: "Claimed",
     color: "bg-green-100 text-green-800 hover:bg-green-100",
   },
   expired: {
@@ -29,7 +32,7 @@ const STATUS_CONFIG: Record<
   },
 };
 
-export function ReferralList({ referrals }: ReferralListProps) {
+export function ReferralList({ referrals, onClaim }: ReferralListProps) {
   if (referrals.length === 0) {
     return (
       <Card>
@@ -89,29 +92,116 @@ export function ReferralList({ referrals }: ReferralListProps) {
                     </div>
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  {referral.rewardAmount !== null ? (
-                    <>
-                      <div className="font-bold text-lg text-green-600">
-                        ${referral.rewardAmount}
-                      </div>
-                      <div className="text-xs text-gray-500">Reward</div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="font-medium text-gray-400">--</div>
-                      <div className="text-xs text-gray-400">
-                        Awaiting quote
-                      </div>
-                    </>
+                <div className="shrink-0">
+                  {referral.status === "ready_to_claim" && referral.rewardAmount && (
+                    <ClaimButton
+                      amount={referral.rewardAmount}
+                      onClaim={() => onClaim?.(referral.id)}
+                    />
+                  )}
+                  {referral.status === "claimed" && referral.rewardAmount && referral.giftCardCode && (
+                    <ClaimedReward
+                      amount={referral.rewardAmount}
+                      code={referral.giftCardCode}
+                    />
                   )}
                 </div>
-              </div>
+                </div>
             );
           })}
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function ClaimButton({ amount, onClaim }: { amount: number; onClaim: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+
+  if (!confirming) {
+    return (
+      <Button
+        onClick={() => setConfirming(true)}
+        className="gap-2 bg-orange-500 hover:bg-orange-600 text-white"
+      >
+        <Gift className="size-4" />
+        Claim ${amount} Reward
+      </Button>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-2">
+      <p className="text-sm text-gray-600">
+        We'll email your Amazon gift card code too.
+      </p>
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setConfirming(false)}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          onClick={onClaim}
+          className="gap-1 bg-orange-500 hover:bg-orange-600 text-white"
+        >
+          <Gift className="size-4" />
+          Confirm Claim
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ClaimedReward({ amount, code }: { amount: number; code: string }) {
+  const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const maskedCode = code.slice(0, 4) + "-****-" + code.slice(-4);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex flex-col items-end gap-1.5">
+      <span className="text-sm font-medium text-green-600">
+        ${amount} Amazon Gift Card
+      </span>
+      <div className="flex items-center gap-1.5">
+        <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
+          {revealed ? code : maskedCode}
+        </code>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={() => setRevealed(!revealed)}
+          title={revealed ? "Hide code" : "Show code"}
+        >
+          {revealed ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={handleCopy}
+          title="Copy code"
+        >
+          {copied ? (
+            <Check className="size-3.5 text-green-600" />
+          ) : (
+            <Copy className="size-3.5" />
+          )}
+        </Button>
+      </div>
+      <span className="text-xs text-gray-400">Also sent to your email</span>
+    </div>
   );
 }
 

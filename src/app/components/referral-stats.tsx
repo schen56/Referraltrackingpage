@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { DollarSign, Users, CheckCircle, Clock } from "lucide-react";
+import { Users, CheckCircle, Clock, Gift } from "lucide-react";
 
 export type Referral = {
   id: string;
@@ -8,8 +8,9 @@ export type Referral = {
   phone: string;
   zip?: string;
   note?: string;
-  status: "pending" | "quote_approved" | "completed" | "expired";
+  status: "pending" | "ready_to_claim" | "claimed" | "expired";
   rewardAmount: number | null; // null until referee's quote is approved ($50, $75, or $100 based on order size)
+  giftCardCode?: string; // Amazon gift card claim code, present only after claimed
   dateAdded: string;
 };
 
@@ -18,39 +19,41 @@ type ReferralStatsProps = {
 };
 
 export function ReferralStats({ referrals }: ReferralStatsProps) {
-  const totalEarned = referrals
-    .filter((r) => r.status === "completed" && r.rewardAmount !== null)
-    .reduce((sum, r) => sum + (r.rewardAmount ?? 0), 0);
-
   const totalReferrals = referrals.length;
-  const completedReferrals = referrals.filter(
-    (r) => r.status === "completed"
+  const readyToClaim = referrals.filter(
+    (r) => r.status === "ready_to_claim"
+  ).length;
+  const claimedReferrals = referrals.filter(
+    (r) => r.status === "claimed"
   ).length;
   const pendingReferrals = referrals.filter(
-    (r) => r.status === "pending" || r.status === "quote_approved"
+    (r) => r.status === "pending"
   ).length;
 
   const stats = [
-    {
-      title: "Total Earned",
-      value: `$${totalEarned}`,
-      icon: DollarSign,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
-    },
     {
       title: "Total Referrals",
       value: totalReferrals,
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
+      highlight: false,
     },
     {
-      title: "Completed",
-      value: completedReferrals,
+      title: "Ready to Claim",
+      value: readyToClaim,
+      icon: Gift,
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
+      highlight: readyToClaim > 0,
+    },
+    {
+      title: "Claimed",
+      value: claimedReferrals,
       icon: CheckCircle,
       color: "text-emerald-600",
       bgColor: "bg-emerald-100",
+      highlight: false,
     },
     {
       title: "Pending",
@@ -58,13 +61,17 @@ export function ReferralStats({ referrals }: ReferralStatsProps) {
       icon: Clock,
       color: "text-amber-600",
       bgColor: "bg-amber-100",
+      highlight: false,
     },
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {stats.map((stat) => (
-        <Card key={stat.title}>
+        <Card
+          key={stat.title}
+          className={stat.highlight ? "ring-2 ring-orange-400 shadow-md" : ""}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
             <div className={`p-2 rounded-full ${stat.bgColor}`}>
